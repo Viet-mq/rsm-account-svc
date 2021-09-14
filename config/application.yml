@@ -20,9 +20,9 @@ spring:
     mongodb:
       host: 103.152.165.53
       port: 27017
-      database: 'chatbot'
-      username: 'chatbot'
-      password: 'chatbotj12Uth65ZI1juLTaXVcYU6c'
+      database: 'resume'
+      username: 'resume'
+      password: 'abc123resume'
 
 server:
   port: ${ACCOUNT_SVC_PORT:30002}
