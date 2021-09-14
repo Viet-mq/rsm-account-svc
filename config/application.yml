@@ -1,10 +1,10 @@
 spring:
   application:
-    name: account-svc
+    name: acc-svc
   redis:
-    host: '10.0.0.34'
-    port: 6379
-    password: 'abc@xyz'
+    host: '103.152.165.53'
+    port: 9981
+    password: 'hhhhhhhhhhsdvnsldvmsdlvmsdlkvmsdv'
     lettuce:
       pool:
         max-active: 7
