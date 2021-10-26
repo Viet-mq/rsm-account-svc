@@ -6,6 +6,7 @@ import com.edso.resume.account.domain.request.LoginRequest;
 import com.edso.resume.account.domain.request.LogoutRequest;
 import com.edso.resume.account.domain.response.LoginResponse;
 import com.edso.resume.account.entities.SessionEntity;
+import com.edso.resume.account.entities.TalentPool;
 import com.edso.resume.account.repo.SessionRepository;
 import com.edso.resume.lib.common.AppUtils;
 import com.edso.resume.lib.common.CollectionNameDefs;
@@ -100,12 +101,26 @@ public class AuthenticationServiceImpl extends BaseService implements Authentica
                 tree = new ArrayList<>();
             }
 
+            // [dautv] : tạm fix để test, sau này sẽ phân quyền lại cho đúng
+            List<Document> talentPools = db.findAll("coll_email_template", new Document(), null, 0, 100);
+            List<TalentPool> pools = new ArrayList<>();
+            if (talentPools != null && !talentPools.isEmpty()) {
+                for (Document d : talentPools) {
+                    TalentPool pool = TalentPool.builder()
+                            .id(AppUtils.parseString(d.get("id")))
+                            .name(AppUtils.parseString(d.get("name")))
+                            .build();
+                    pools.add(pool);
+                }
+            }
+
             // setup response
             String fullName = AppUtils.parseString(user.get("full_name"));
             response.setPermission(tree);
             response.setUsername(username);
             response.setFullName(fullName);
             response.setAccessToken(sessionEntity.getToken());
+            response.setPools(pools);
             response.setSuccess();
             return response;
 
