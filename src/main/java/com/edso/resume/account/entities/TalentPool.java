@@ -8,4 +8,5 @@ import lombok.Data;
 public class TalentPool {
     private String id;
     private String name;
+    private int count;
 }

@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Random;
 
 @Service
 public class AuthenticationServiceImpl extends BaseService implements AuthenticationService {
@@ -105,10 +106,12 @@ public class AuthenticationServiceImpl extends BaseService implements Authentica
             List<Document> talentPools = db.findAll("coll_talent_pool", new Document(), null, 0, 100);
             List<TalentPool> pools = new ArrayList<>();
             if (talentPools != null && !talentPools.isEmpty()) {
+                Random random = new Random();
                 for (Document d : talentPools) {
                     TalentPool pool = TalentPool.builder()
                             .id(AppUtils.parseString(d.get("id")))
                             .name(AppUtils.parseString(d.get("name")))
+                            .count(random.nextInt(500))
                             .build();
                     pools.add(pool);
                 }
