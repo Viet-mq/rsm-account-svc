@@ -102,7 +102,7 @@ public class AuthenticationServiceImpl extends BaseService implements Authentica
             }
 
             // [dautv] : tạm fix để test, sau này sẽ phân quyền lại cho đúng
-            List<Document> talentPools = db.findAll("coll_email_template", new Document(), null, 0, 100);
+            List<Document> talentPools = db.findAll("coll_talent_pool", new Document(), null, 0, 100);
             List<TalentPool> pools = new ArrayList<>();
             if (talentPools != null && !talentPools.isEmpty()) {
                 for (Document d : talentPools) {
