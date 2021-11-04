@@ -6,6 +6,7 @@ import com.edso.resume.account.domain.request.*;
 import com.edso.resume.account.entities.UserEntity;
 import com.edso.resume.lib.common.AppUtils;
 import com.edso.resume.lib.common.CollectionNameDefs;
+import com.edso.resume.lib.common.DbKeyConfig;
 import com.edso.resume.lib.entities.HeaderInfo;
 import com.edso.resume.lib.entities.PagingInfo;
 import com.edso.resume.lib.response.BaseResponse;
@@ -90,12 +91,21 @@ public class AccountServiceImpl extends BaseService implements AccountService {
             return response;
         }
 
+        Document company = db.findOne(CollectionNameDefs.COLL_COMPANY, Filters.eq("id", request.getCompany()));
+        if (company == null) {
+            response.setFailed("Không tồn tại id company này");
+            return response;
+        }
+
         String password = request.getPassword();
         String dateofBirth = request.getDateOfBirth();
         password = AppUtils.MD5(password);
         password = AppUtils.MD5(password);
 
         user = new Document();
+
+        user.append(DbKeyConfig.COMPANY_ID, request.getCompany());
+        user.append(DbKeyConfig.COMPANY_NAME, AppUtils.parseString(company.get(DbKeyConfig.COMPANY_NAME)));
         user.append("username", username);
         user.append("full_name", request.getFullName());
         user.append("password", password);

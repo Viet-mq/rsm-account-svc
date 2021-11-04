@@ -16,11 +16,16 @@ public class CreateAccountRequest extends BaseAuthRequest {
     private String fullName;
     private Integer role;
     private String dateOfBirth;
+    private String company;
 
     public BaseResponse validate() {
         BaseResponse response = new BaseResponse();
         if (Strings.isNullOrEmpty(username)) {
             response.setResult(-1, "Vui lòng nhập tên đăng nhập");
+            return response;
+        }
+        if (Strings.isNullOrEmpty(company)) {
+            response.setResult(-1, "Vui lòng nhập tên công ty");
             return response;
         }
         if (!AppUtils.validateUsername(username)) {

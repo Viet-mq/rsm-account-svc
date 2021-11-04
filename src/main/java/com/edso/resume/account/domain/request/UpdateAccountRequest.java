@@ -14,11 +14,16 @@ public class UpdateAccountRequest extends BaseAuthRequest {
     private String username;
     private String fullName;
     private String dateOfBirth;
+    private String company;
 
     public BaseResponse validate() {
         BaseResponse response = new BaseResponse();
         if (Strings.isNullOrEmpty(username)) {
             response.setResult(-1, "Vui lòng nhập tên đăng nhập");
+            return response;
+        }
+        if (Strings.isNullOrEmpty(company)) {
+            response.setResult(-1, "Vui lòng nhập tên công ty");
             return response;
         }
         if (Strings.isNullOrEmpty(fullName)) {

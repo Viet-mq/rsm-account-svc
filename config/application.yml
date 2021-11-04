@@ -59,3 +59,13 @@ ribbon:
 
 application:
   version: ${VERSION:1.0}
+
+company:
+  favicon:
+    domain: http://file-rs.edsolabs.com/favicon/
+#    path: /usr/share/nginx/file-rs/favicon/
+    path: D:\
+  logo:
+    domain: http://file-rs.edsolabs.com/logo/
+#    path: /usr/share/nginx/file-rs/logo/
+    path: D:\
