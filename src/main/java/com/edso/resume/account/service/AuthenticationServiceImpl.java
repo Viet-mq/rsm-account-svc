@@ -85,6 +85,7 @@ public class AuthenticationServiceImpl extends BaseService implements Authentica
             SessionEntity sessionEntity = SessionEntity.builder()
                     .token(token)
                     .username(username)
+                    .fullName(AppUtils.parseString(user.get("full_name")))
                     .role(1)
                     .permissions(ps)
                     .lastRequest(System.currentTimeMillis())

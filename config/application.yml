@@ -2,9 +2,10 @@ spring:
   application:
     name: acc-svc
   redis:
-    host: '103.152.165.53'
+    host: 192.168.50.33
     port: 9981
     password: 'hhhhhhhhhhsdvnsldvmsdlvmsdlkvmsdv'
+    database: 6
     lettuce:
       pool:
         max-active: 7
@@ -18,14 +19,14 @@ spring:
       max-request-size: 100MB
   data:
     mongodb:
-      host: 103.152.165.53
+      host: 192.168.50.33
       port: 27017
       database: 'resume'
       username: 'resume'
-      password: 'abc123resume'
+      password: 'MHFbdWe1KsjiMKtzDpuDrue1ZtcmDifxY1ousr5HXj12Uth65ZI1juLTaXVcYU6czsdgh'
 
 server:
-  port: ${ACCOUNT_SVC_PORT:30002}
+  port: ${ACCOUNT_SVC_PORT:30302}
   http2:
     enabled: true
   compression:
@@ -36,7 +37,7 @@ server:
 eureka:
   client:
     serviceUrl:
-      defaultZone: ${EUREKA_URI:http://localhost:30000/eureka/}
+      defaultZone: ${EUREKA_URI:http://localhost:30300/eureka/}
 
 logging:
   config: config/log4j2.xml
@@ -63,9 +64,9 @@ application:
 company:
   favicon:
     domain: http://file-rs.edsolabs.com/favicon/
-#    path: /usr/share/nginx/file-rs/favicon/
-    path: D:\
+    path: /usr/share/nginx/file-rs/favicon/
+    # path: D:\
   logo:
     domain: http://file-rs.edsolabs.com/logo/
-#    path: /usr/share/nginx/file-rs/logo/
-    path: D:\
+    path: /usr/share/nginx/file-rs/logo/
+    # path: D:\

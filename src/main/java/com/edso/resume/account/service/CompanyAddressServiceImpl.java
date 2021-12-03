@@ -64,9 +64,7 @@ public class CompanyAddressServiceImpl extends BaseService implements CompanyAdd
             return response;
         }
 
-        Document cond1 = new Document();
-        cond1.append(DbKeyConfig.ID, request.getIdCompany());
-        cond1.append("company_sub_address.id", request.getIdAddress());
+        Bson cond1 = Filters.eq("company_sub_address.id", request.getIdAddress());
 
         Bson update = Updates.combine(
                 Updates.set("company_sub_address.$.name", request.getAddress())
