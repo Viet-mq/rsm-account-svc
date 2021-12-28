@@ -14,16 +14,12 @@ public class UpdateAccountRequest extends BaseAuthRequest {
     private String username;
     private String fullName;
     private String dateOfBirth;
-    private String company;
+    private String email;
 
     public BaseResponse validate() {
         BaseResponse response = new BaseResponse();
         if (Strings.isNullOrEmpty(username)) {
             response.setResult(-1, "Vui lòng nhập tên đăng nhập");
-            return response;
-        }
-        if (Strings.isNullOrEmpty(company)) {
-            response.setResult(-1, "Vui lòng nhập tên công ty");
             return response;
         }
         if (Strings.isNullOrEmpty(fullName)) {
@@ -32,6 +28,14 @@ public class UpdateAccountRequest extends BaseAuthRequest {
         }
         if (!AppUtils.validateFullName(fullName)) {
             response.setResult(-1, "Họ và tên không đúng");
+            return response;
+        }
+        if (Strings.isNullOrEmpty(email)) {
+            response.setResult(-1, "Bạn chưa nhập email");
+            return response;
+        }
+        if (!AppUtils.validateEmail(email)) {
+            response.setResult(-1, "Bạn nhập email chưa đúng định dạng");
             return response;
         }
         if (Strings.isNullOrEmpty(dateOfBirth)) {

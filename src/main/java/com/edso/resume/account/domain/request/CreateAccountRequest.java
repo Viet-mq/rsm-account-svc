@@ -14,18 +14,14 @@ public class CreateAccountRequest extends BaseAuthRequest {
     private String username;
     private String password;
     private String fullName;
+    private String email;
     private Integer role;
     private String dateOfBirth;
-    private String company;
 
     public BaseResponse validate() {
         BaseResponse response = new BaseResponse();
         if (Strings.isNullOrEmpty(username)) {
             response.setResult(-1, "Vui lòng nhập tên đăng nhập");
-            return response;
-        }
-        if (Strings.isNullOrEmpty(company)) {
-            response.setResult(-1, "Vui lòng nhập tên công ty");
             return response;
         }
         if (!AppUtils.validateUsername(username)) {
@@ -38,6 +34,14 @@ public class CreateAccountRequest extends BaseAuthRequest {
         }
         if (Strings.isNullOrEmpty(fullName)) {
             response.setResult(-1, "Bạn chưa nhập họ và tên");
+            return response;
+        }
+        if (Strings.isNullOrEmpty(email)) {
+            response.setResult(-1, "Bạn chưa nhập email");
+            return response;
+        }
+        if (!AppUtils.validateEmail(email)) {
+            response.setResult(-1, "Bạn nhập email chưa đúng định dạng");
             return response;
         }
         if (!AppUtils.validateFullName(fullName)) {

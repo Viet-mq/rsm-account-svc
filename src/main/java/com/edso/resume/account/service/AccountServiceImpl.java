@@ -6,7 +6,6 @@ import com.edso.resume.account.domain.request.*;
 import com.edso.resume.account.entities.UserEntity;
 import com.edso.resume.lib.common.AppUtils;
 import com.edso.resume.lib.common.CollectionNameDefs;
-import com.edso.resume.lib.common.DbKeyConfig;
 import com.edso.resume.lib.entities.HeaderInfo;
 import com.edso.resume.lib.entities.PagingInfo;
 import com.edso.resume.lib.response.BaseResponse;
@@ -61,6 +60,7 @@ public class AccountServiceImpl extends BaseService implements AccountService {
             UserEntity entity = new UserEntity();
             entity.setUsername(AppUtils.parseString(doc.get("username")));
             entity.setFullName(AppUtils.parseString(doc.get("full_name")));
+            entity.setFullName(AppUtils.parseString(doc.get("email")));
             entity.setDateOfBirth(AppUtils.parseString(doc.get("dateOfBirth")));
             entity.setRole(AppUtils.parseInt(doc.get("role")));
             entity.setStatus(AppUtils.parseInt(doc.get("status")));
@@ -91,11 +91,6 @@ public class AccountServiceImpl extends BaseService implements AccountService {
             return response;
         }
 
-        Document company = db.findOne(CollectionNameDefs.COLL_COMPANY, Filters.eq("id", request.getCompany()));
-        if (company == null) {
-            response.setFailed("Không tồn tại id company này");
-            return response;
-        }
 
         String password = request.getPassword();
         String dateofBirth = request.getDateOfBirth();
@@ -104,9 +99,8 @@ public class AccountServiceImpl extends BaseService implements AccountService {
 
         user = new Document();
 
-        user.append(DbKeyConfig.COMPANY_ID, request.getCompany());
-        user.append(DbKeyConfig.COMPANY_NAME, AppUtils.parseString(company.get(DbKeyConfig.COMPANY_NAME)));
         user.append("username", username);
+        user.append("email", request.getEmail());
         user.append("full_name", request.getFullName());
         user.append("password", password);
         user.append("status", Common.ACC_STATUS_ACTIVE);
@@ -154,8 +148,9 @@ public class AccountServiceImpl extends BaseService implements AccountService {
         Bson valueDateOfBirth = set("dateOfBirth", dateOfBirth);
         Bson valueUpdate_at = set("update_at", update_at);
         Bson valueUserUpdate = set("update_by", userUpdate);
+        Bson valueEmailUpdate = set("email", request.getEmail());
 
-        Bson value = Updates.combine(valueFullname, valueDateOfBirth, valueUpdate_at, valueUserUpdate);
+        Bson value = Updates.combine(valueFullname, valueDateOfBirth, valueUpdate_at, valueUserUpdate, valueEmailUpdate);
 
         db.update(CollectionNameDefs.COLL_USER, cond, value);
 
