@@ -60,7 +60,7 @@ public class AccountServiceImpl extends BaseService implements AccountService {
             UserEntity entity = new UserEntity();
             entity.setUsername(AppUtils.parseString(doc.get("username")));
             entity.setFullName(AppUtils.parseString(doc.get("full_name")));
-            entity.setFullName(AppUtils.parseString(doc.get("email")));
+            entity.setEmail(AppUtils.parseString(doc.get("email")));
             entity.setDateOfBirth(AppUtils.parseString(doc.get("dateOfBirth")));
             entity.setRole(AppUtils.parseInt(doc.get("role")));
             entity.setStatus(AppUtils.parseInt(doc.get("status")));

@@ -7,6 +7,7 @@ public class UserEntity {
     private String username;
     private String fullName;
     private String dateOfBirth;
+    private String email;
     private Integer role;
     private Integer status;
     private Long createAt;
