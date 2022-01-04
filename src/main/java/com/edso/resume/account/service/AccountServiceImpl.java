@@ -39,8 +39,8 @@ public class AccountServiceImpl extends BaseService implements AccountService {
         List<UserEntity> rows = new ArrayList<>();
         List<Bson> c = new ArrayList<>();
         if (!Strings.isNullOrEmpty(name)) {
-            c.add(Filters.or(Filters.regex("username", Pattern.compile(name)),
-                    Filters.regex("full_name", Pattern.compile(name)))
+            c.add(Filters.or(Filters.regex("username", Pattern.compile(parseVietnameseToEnglish(name))),
+                    Filters.regex("name_search", Pattern.compile(parseVietnameseToEnglish(name))))
             );
         }
         if (role != null) {
@@ -102,6 +102,7 @@ public class AccountServiceImpl extends BaseService implements AccountService {
         user.append("username", username);
         user.append("email", request.getEmail());
         user.append("full_name", request.getFullName());
+        user.append("name_search", parseVietnameseToEnglish(request.getFullName()));
         user.append("password", password);
         user.append("status", Common.ACC_STATUS_ACTIVE);
         user.append("dateOfBirth", dateofBirth);
@@ -145,12 +146,13 @@ public class AccountServiceImpl extends BaseService implements AccountService {
 
 
         Bson valueFullname = set("full_name", full_name);
+        Bson valueNameSearch = set("name_search", parseVietnameseToEnglish(full_name));
         Bson valueDateOfBirth = set("dateOfBirth", dateOfBirth);
         Bson valueUpdate_at = set("update_at", update_at);
         Bson valueUserUpdate = set("update_by", userUpdate);
         Bson valueEmailUpdate = set("email", request.getEmail());
 
-        Bson value = Updates.combine(valueFullname, valueDateOfBirth, valueUpdate_at, valueUserUpdate, valueEmailUpdate);
+        Bson value = Updates.combine(valueFullname, valueDateOfBirth, valueUpdate_at, valueUserUpdate, valueEmailUpdate, valueNameSearch);
 
         db.update(CollectionNameDefs.COLL_USER, cond, value);
 
