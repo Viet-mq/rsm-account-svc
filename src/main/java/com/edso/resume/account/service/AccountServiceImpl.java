@@ -6,6 +6,7 @@ import com.edso.resume.account.domain.request.*;
 import com.edso.resume.account.entities.UserEntity;
 import com.edso.resume.lib.common.AppUtils;
 import com.edso.resume.lib.common.CollectionNameDefs;
+import com.edso.resume.lib.common.DbKeyConfig;
 import com.edso.resume.lib.entities.HeaderInfo;
 import com.edso.resume.lib.entities.PagingInfo;
 import com.edso.resume.lib.response.BaseResponse;
@@ -91,6 +92,12 @@ public class AccountServiceImpl extends BaseService implements AccountService {
             return response;
         }
 
+        Document email = db.findOne(CollectionNameDefs.COLL_USER, Filters.eq("email", request.getEmail()));
+
+        if (email != null) {
+            response.setResult(-1, "Email này đã tồn tại");
+            return response;
+        }
 
         String password = request.getPassword();
         String dateofBirth = request.getDateOfBirth();
@@ -140,13 +147,22 @@ public class AccountServiceImpl extends BaseService implements AccountService {
             return response;
         }
 
-        String full_name = request.getFullName();
+        Document obj = db.findOne(CollectionNameDefs.COLL_USER, Filters.eq("email", request.getEmail()));
+        if (obj != null) {
+            String objId = AppUtils.parseString(obj.get(DbKeyConfig.USERNAME));
+            if (!objId.equals(request.getUsername())) {
+                response.setFailed("Email này đã tồn tại");
+                return response;
+            }
+        }
+
+        String fullName = request.getFullName();
         String dateOfBirth = request.getDateOfBirth();
         Long update_at = System.currentTimeMillis();
 
 
-        Bson valueFullname = set("full_name", full_name);
-        Bson valueNameSearch = set("name_search", parseVietnameseToEnglish(full_name));
+        Bson valueFullname = set("full_name", fullName);
+        Bson valueNameSearch = set("name_search", parseVietnameseToEnglish(fullName));
         Bson valueDateOfBirth = set("dateOfBirth", dateOfBirth);
         Bson valueUpdate_at = set("update_at", update_at);
         Bson valueUserUpdate = set("update_by", userUpdate);

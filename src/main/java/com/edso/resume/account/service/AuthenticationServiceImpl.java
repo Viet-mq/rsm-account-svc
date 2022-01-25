@@ -82,10 +82,11 @@ public class AuthenticationServiceImpl extends BaseService implements Authentica
                 ps = r1.getRows();
             }
 
+            String fullName = AppUtils.parseString(user.get("full_name"));
             SessionEntity sessionEntity = SessionEntity.builder()
                     .token(token)
                     .username(username)
-                    .fullName(AppUtils.parseString(user.get("full_name")))
+                    .fullName(fullName)
                     .role(1)
                     .permissions(ps)
                     .lastRequest(System.currentTimeMillis())
@@ -119,7 +120,6 @@ public class AuthenticationServiceImpl extends BaseService implements Authentica
             }
 
             // setup response
-            String fullName = AppUtils.parseString(user.get("full_name"));
             response.setPermission(tree);
             response.setUsername(username);
             response.setFullName(fullName);
