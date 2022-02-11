@@ -39,7 +39,7 @@ public class DepartmentServiceImpl extends BaseService implements DepartmentServ
         GetArrayResponse<DepartmentEntity> resp = new GetArrayResponse<>();
         Bson cond = Filters.eq(DbKeyConfig.COMPANY_ID, idCompany);
         Document company = db.findOne(CollectionNameDefs.COLL_COMPANY, Filters.eq(DbKeyConfig.ID, idCompany));
-        if(company == null){
+        if (company == null) {
             resp.setFailed("Không tồn tại công ty này");
             return resp;
         }

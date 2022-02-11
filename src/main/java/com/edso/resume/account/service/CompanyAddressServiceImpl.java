@@ -2,7 +2,6 @@ package com.edso.resume.account.service;
 
 import com.edso.resume.account.domain.db.MongoDbOnlineSyncActions;
 import com.edso.resume.account.domain.request.CreateCompanyAddressRequest;
-import com.edso.resume.account.domain.request.CreateCompanyRequest;
 import com.edso.resume.account.domain.request.DeleteCompanyAddressRequest;
 import com.edso.resume.account.domain.request.UpdateCompanyAddressRequest;
 import com.edso.resume.lib.common.CollectionNameDefs;
@@ -17,7 +16,7 @@ import org.springframework.stereotype.Service;
 import java.util.UUID;
 
 @Service
-public class CompanyAddressServiceImpl extends BaseService implements CompanyAddressService{
+public class CompanyAddressServiceImpl extends BaseService implements CompanyAddressService {
 
     private final MongoDbOnlineSyncActions db;
 
@@ -32,7 +31,7 @@ public class CompanyAddressServiceImpl extends BaseService implements CompanyAdd
         Bson cond = Filters.eq(DbKeyConfig.ID, request.getIdCompany());
         Document company = db.findOne(CollectionNameDefs.COLL_COMPANY, cond);
 
-        if(company == null){
+        if (company == null) {
             response.setFailed("Không tồn tại id company này");
             return response;
         }
@@ -59,7 +58,7 @@ public class CompanyAddressServiceImpl extends BaseService implements CompanyAdd
         Bson cond = Filters.eq(DbKeyConfig.ID, request.getIdCompany());
         Document company = db.findOne(CollectionNameDefs.COLL_COMPANY, cond);
 
-        if(company == null){
+        if (company == null) {
             response.setFailed("Không tồn tại id company này");
             return response;
         }
@@ -84,7 +83,7 @@ public class CompanyAddressServiceImpl extends BaseService implements CompanyAdd
         Bson cond = Filters.eq(DbKeyConfig.ID, request.getIdCompany());
         Document company = db.findOne(CollectionNameDefs.COLL_COMPANY, cond);
 
-        if(company == null){
+        if (company == null) {
             response.setFailed("Không tồn tại id company này");
             return response;
         }
