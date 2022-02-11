@@ -55,7 +55,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
     public GetArrayResponse<CompanyEntity> findAllCompany(HeaderInfo info, String name, Integer page, Integer size) {
         List<Bson> c = new ArrayList<>();
         if (!Strings.isNullOrEmpty(name)) {
-            c.add(Filters.regex(DbKeyConfig.NAME_SEARCH, Pattern.compile(name.toLowerCase())));
+            c.add(Filters.regex(DbKeyConfig.NAME_SEARCH, Pattern.compile(AppUtils.parseVietnameseToEnglish(name))));
         }
         Bson cond = buildCondition(c);
         long total = db.countAll(CollectionNameDefs.COLL_COMPANY, cond);
@@ -96,7 +96,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
         MultipartFile logo = request.getCompanyLogo();
 
         String name = request.getCompanyName();
-        Bson c = Filters.eq(DbKeyConfig.NAME_SEARCH, name.toLowerCase());
+        Bson c = Filters.eq(DbKeyConfig.NAME_EQUAL, AppUtils.mergeWhitespace(name.toLowerCase()));
         long count = db.countAll(CollectionNameDefs.COLL_COMPANY, c);
 
         if (count > 0) {
@@ -122,7 +122,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
 
         Document department = new Document();
         department.append(DbKeyConfig.ID, UUID.randomUUID().toString());
-        department.append(DbKeyConfig.COMPANY_NAME, name);
+        department.append(DbKeyConfig.COMPANY_NAME, AppUtils.mergeWhitespace(name));
         department.append(DbKeyConfig.COMPANY_WEBSITE_URL, request.getCompanyWebsiteUrl());
         department.append(DbKeyConfig.COMPANY_CONTACT_NUMBER, request.getCompanyContactNumber());
         department.append(DbKeyConfig.COMPANY_ADDRESS, request.getCompanyAddress());
@@ -133,7 +133,8 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
         department.append(DbKeyConfig.FAV_ICON_PATH, pathFavIcon + faviconFileName);
         department.append(DbKeyConfig.COMPANY_LOGO_URL, domainLogo + logoFileName);
         department.append(DbKeyConfig.COMPANY_LOGO_PATH, pathLogo + logoFileName);
-        department.append(DbKeyConfig.NAME_SEARCH, name);
+        department.append(DbKeyConfig.NAME_SEARCH, AppUtils.parseVietnameseToEnglish(name));
+        department.append(DbKeyConfig.NAME_EQUAL, AppUtils.mergeWhitespace(name.toLowerCase()));
         department.append(DbKeyConfig.CREATE_AT, System.currentTimeMillis());
         department.append(DbKeyConfig.CREATE_BY, request.getInfo().getUsername());
 
@@ -161,7 +162,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
         }
 
         String name = request.getCompanyName();
-        Document obj = db.findOne(CollectionNameDefs.COLL_COMPANY, Filters.eq(DbKeyConfig.NAME_SEARCH, name.toLowerCase()));
+        Document obj = db.findOne(CollectionNameDefs.COLL_COMPANY, Filters.eq(DbKeyConfig.NAME_EQUAL, AppUtils.mergeWhitespace(name.toLowerCase())));
         if (obj != null) {
             String objId = AppUtils.parseString(obj.get(DbKeyConfig.ID));
             if (!objId.equals(id)) {
@@ -189,7 +190,7 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
 
         // update roles
         Bson updates = Updates.combine(
-                Updates.set(DbKeyConfig.COMPANY_NAME, name),
+                Updates.set(DbKeyConfig.COMPANY_NAME, AppUtils.mergeWhitespace(name)),
                 Updates.set(DbKeyConfig.COMPANY_WEBSITE_URL, request.getCompanyWebsiteUrl()),
                 Updates.set(DbKeyConfig.COMPANY_CONTACT_NUMBER, request.getCompanyContactNumber()),
                 Updates.set(DbKeyConfig.COMPANY_ADDRESS, request.getCompanyAddress()),
@@ -200,7 +201,8 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
                 Updates.set(DbKeyConfig.FAV_ICON_PATH, pathFavIcon + faviconFileName),
                 Updates.set(DbKeyConfig.COMPANY_LOGO_URL, domainLogo + logoFileName),
                 Updates.set(DbKeyConfig.COMPANY_LOGO_PATH, pathLogo + logoFileName),
-                Updates.set(DbKeyConfig.NAME_SEARCH, name.toLowerCase()),
+                Updates.set(DbKeyConfig.NAME_SEARCH, AppUtils.parseVietnameseToEnglish(name)),
+                Updates.set(DbKeyConfig.NAME_EQUAL, AppUtils.mergeWhitespace(name.toLowerCase())),
                 Updates.set(DbKeyConfig.UPDATE_AT, System.currentTimeMillis()),
                 Updates.set(DbKeyConfig.UPDATE_BY, request.getInfo().getUsername())
         );
