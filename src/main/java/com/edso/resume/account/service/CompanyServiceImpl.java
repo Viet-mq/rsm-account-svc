@@ -19,7 +19,6 @@ import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Updates;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,14 +36,14 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
     private final MongoDbOnlineSyncActions db;
     private final DepartmentService departmentService;
 
-    @Value("${company.favicon.domain}")
-    private String domainFavIcon;
-    @Value("${company.favicon.path}")
-    private String pathFavIcon;
-    @Value("${company.logo.domain}")
-    private String domainLogo;
-    @Value("${company.logo.path}")
-    private String pathLogo;
+//    @Value("${company.favicon.domain}")
+//    private String domainFavIcon;
+//    @Value("${company.favicon.path}")
+//    private String pathFavIcon;
+//    @Value("${company.logo.domain}")
+//    private String domainLogo;
+//    @Value("${company.logo.path}")
+//    private String pathLogo;
 
     public CompanyServiceImpl(MongoDbOnlineSyncActions db, DepartmentService departmentService) {
         this.db = db;
@@ -92,8 +91,8 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
     public BaseResponse createCompany(CreateCompanyRequest request) {
         BaseResponse response = new BaseResponse();
 
-        MultipartFile favicon = request.getFavIcon();
-        MultipartFile logo = request.getCompanyLogo();
+//        MultipartFile favicon = request.getFavIcon();
+//        MultipartFile logo = request.getCompanyLogo();
 
         String name = request.getCompanyName();
         Bson c = Filters.eq(DbKeyConfig.NAME_EQUAL, AppUtils.mergeWhitespace(name.toLowerCase()));
@@ -104,35 +103,35 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
             return response;
         }
 
-        //Save file
-        String faviconFileName = null;
-        try {
-            faviconFileName = saveFile(favicon, pathFavIcon);
-        } catch (Throwable ex) {
-            logger.error("Exception: ", ex);
-        }
-
-        String logoFileName = null;
-        try {
-            logoFileName = saveFile(logo, pathLogo);
-        } catch (Throwable ex) {
-            logger.error("Exception: ", ex);
-        }
+//        //Save file
+//        String faviconFileName = null;
+//        try {
+//            faviconFileName = saveFile(favicon, pathFavIcon);
+//        } catch (Throwable ex) {
+//            logger.error("Exception: ", ex);
+//        }
+//
+//        String logoFileName = null;
+//        try {
+//            logoFileName = saveFile(logo, pathLogo);
+//        } catch (Throwable ex) {
+//            logger.error("Exception: ", ex);
+//        }
 
 
         Document department = new Document();
         department.append(DbKeyConfig.ID, UUID.randomUUID().toString());
         department.append(DbKeyConfig.COMPANY_NAME, AppUtils.mergeWhitespace(name));
-        department.append(DbKeyConfig.COMPANY_WEBSITE_URL, request.getCompanyWebsiteUrl());
-        department.append(DbKeyConfig.COMPANY_CONTACT_NUMBER, request.getCompanyContactNumber());
-        department.append(DbKeyConfig.COMPANY_ADDRESS, request.getCompanyAddress());
-        department.append(DbKeyConfig.WEBSITE_TITLE, request.getWebsiteTitle());
-        department.append(DbKeyConfig.WEBSITE_LINK, request.getWebsiteLink());
-        department.append(DbKeyConfig.KEYWORDS, request.getKeywords());
-        department.append(DbKeyConfig.FAV_ICON_URL, domainFavIcon + faviconFileName);
-        department.append(DbKeyConfig.FAV_ICON_PATH, pathFavIcon + faviconFileName);
-        department.append(DbKeyConfig.COMPANY_LOGO_URL, domainLogo + logoFileName);
-        department.append(DbKeyConfig.COMPANY_LOGO_PATH, pathLogo + logoFileName);
+//        department.append(DbKeyConfig.COMPANY_WEBSITE_URL, request.getCompanyWebsiteUrl());
+//        department.append(DbKeyConfig.COMPANY_CONTACT_NUMBER, request.getCompanyContactNumber());
+//        department.append(DbKeyConfig.COMPANY_ADDRESS, request.getCompanyAddress());
+//        department.append(DbKeyConfig.WEBSITE_TITLE, request.getWebsiteTitle());
+//        department.append(DbKeyConfig.WEBSITE_LINK, request.getWebsiteLink());
+//        department.append(DbKeyConfig.KEYWORDS, request.getKeywords());
+//        department.append(DbKeyConfig.FAV_ICON_URL, domainFavIcon + faviconFileName);
+//        department.append(DbKeyConfig.FAV_ICON_PATH, pathFavIcon + faviconFileName);
+//        department.append(DbKeyConfig.COMPANY_LOGO_URL, domainLogo + logoFileName);
+//        department.append(DbKeyConfig.COMPANY_LOGO_PATH, pathLogo + logoFileName);
         department.append(DbKeyConfig.NAME_SEARCH, AppUtils.parseVietnameseToEnglish(name));
         department.append(DbKeyConfig.NAME_EQUAL, AppUtils.mergeWhitespace(name.toLowerCase()));
         department.append(DbKeyConfig.CREATE_AT, System.currentTimeMillis());
@@ -149,8 +148,8 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
     public BaseResponse updateCompany(UpdateCompanyRequest request) {
         BaseResponse response = new BaseResponse();
 
-        MultipartFile favicon = request.getFavIcon();
-        MultipartFile logo = request.getCompanyLogo();
+//        MultipartFile favicon = request.getFavIcon();
+//        MultipartFile logo = request.getCompanyLogo();
 
         String id = request.getId();
         Bson cond = Filters.eq(DbKeyConfig.ID, id);
@@ -171,36 +170,36 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
             }
         }
 
-        deleteFile(AppUtils.parseString(idDocument.get(DbKeyConfig.COMPANY_LOGO_PATH)));
-        deleteFile(AppUtils.parseString(idDocument.get(DbKeyConfig.FAV_ICON_PATH)));
+//        deleteFile(AppUtils.parseString(idDocument.get(DbKeyConfig.COMPANY_LOGO_PATH)));
+//        deleteFile(AppUtils.parseString(idDocument.get(DbKeyConfig.FAV_ICON_PATH)));
 
-        String faviconFileName = null;
-        try {
-            faviconFileName = saveFile(favicon, pathFavIcon);
-        } catch (Throwable ex) {
-            logger.error("Exception: ", ex);
-        }
-
-        String logoFileName = null;
-        try {
-            logoFileName = saveFile(logo, pathLogo);
-        } catch (Throwable ex) {
-            logger.error("Exception: ", ex);
-        }
+//        String faviconFileName = null;
+//        try {
+//            faviconFileName = saveFile(favicon, pathFavIcon);
+//        } catch (Throwable ex) {
+//            logger.error("Exception: ", ex);
+//        }
+//
+//        String logoFileName = null;
+//        try {
+//            logoFileName = saveFile(logo, pathLogo);
+//        } catch (Throwable ex) {
+//            logger.error("Exception: ", ex);
+//        }
 
         // update roles
         Bson updates = Updates.combine(
                 Updates.set(DbKeyConfig.COMPANY_NAME, AppUtils.mergeWhitespace(name)),
-                Updates.set(DbKeyConfig.COMPANY_WEBSITE_URL, request.getCompanyWebsiteUrl()),
-                Updates.set(DbKeyConfig.COMPANY_CONTACT_NUMBER, request.getCompanyContactNumber()),
-                Updates.set(DbKeyConfig.COMPANY_ADDRESS, request.getCompanyAddress()),
-                Updates.set(DbKeyConfig.WEBSITE_TITLE, request.getWebsiteTitle()),
-                Updates.set(DbKeyConfig.WEBSITE_LINK, request.getWebsiteLink()),
-                Updates.set(DbKeyConfig.KEYWORDS, request.getKeywords()),
-                Updates.set(DbKeyConfig.FAV_ICON_URL, domainFavIcon + faviconFileName),
-                Updates.set(DbKeyConfig.FAV_ICON_PATH, pathFavIcon + faviconFileName),
-                Updates.set(DbKeyConfig.COMPANY_LOGO_URL, domainLogo + logoFileName),
-                Updates.set(DbKeyConfig.COMPANY_LOGO_PATH, pathLogo + logoFileName),
+//                Updates.set(DbKeyConfig.COMPANY_WEBSITE_URL, request.getCompanyWebsiteUrl()),
+//                Updates.set(DbKeyConfig.COMPANY_CONTACT_NUMBER, request.getCompanyContactNumber()),
+//                Updates.set(DbKeyConfig.COMPANY_ADDRESS, request.getCompanyAddress()),
+//                Updates.set(DbKeyConfig.WEBSITE_TITLE, request.getWebsiteTitle()),
+//                Updates.set(DbKeyConfig.WEBSITE_LINK, request.getWebsiteLink()),
+//                Updates.set(DbKeyConfig.KEYWORDS, request.getKeywords()),
+//                Updates.set(DbKeyConfig.FAV_ICON_URL, domainFavIcon + faviconFileName),
+//                Updates.set(DbKeyConfig.FAV_ICON_PATH, pathFavIcon + faviconFileName),
+//                Updates.set(DbKeyConfig.COMPANY_LOGO_URL, domainLogo + logoFileName),
+//                Updates.set(DbKeyConfig.COMPANY_LOGO_PATH, pathLogo + logoFileName),
                 Updates.set(DbKeyConfig.NAME_SEARCH, AppUtils.parseVietnameseToEnglish(name)),
                 Updates.set(DbKeyConfig.NAME_EQUAL, AppUtils.mergeWhitespace(name.toLowerCase())),
                 Updates.set(DbKeyConfig.UPDATE_AT, System.currentTimeMillis()),
