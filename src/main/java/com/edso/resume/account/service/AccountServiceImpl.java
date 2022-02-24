@@ -92,7 +92,7 @@ public class AccountServiceImpl extends BaseService implements AccountService {
             return response;
         }
 
-        Document email = db.findOne(CollectionNameDefs.COLL_USER, Filters.eq("email", request.getEmail()));
+        Document email = db.findOne(CollectionNameDefs.COLL_USER, Filters.eq("email", request.getEmail().replaceAll(" ", "")));
 
         if (email != null) {
             response.setResult(-1, "Email này đã tồn tại");
@@ -107,7 +107,7 @@ public class AccountServiceImpl extends BaseService implements AccountService {
         user = new Document();
 
         user.append("username", username);
-        user.append("email", request.getEmail());
+        user.append("email", request.getEmail().replaceAll(" ", ""));
         user.append("full_name", request.getFullName());
         user.append("name_search", parseVietnameseToEnglish(request.getFullName()));
         user.append("password", password);
@@ -147,7 +147,7 @@ public class AccountServiceImpl extends BaseService implements AccountService {
             return response;
         }
 
-        Document obj = db.findOne(CollectionNameDefs.COLL_USER, Filters.eq("email", request.getEmail()));
+        Document obj = db.findOne(CollectionNameDefs.COLL_USER, Filters.eq("email", request.getEmail().replaceAll(" ", "")));
         if (obj != null) {
             String objId = AppUtils.parseString(obj.get(DbKeyConfig.USERNAME));
             if (!objId.equals(request.getUsername())) {
@@ -166,11 +166,66 @@ public class AccountServiceImpl extends BaseService implements AccountService {
         Bson valueDateOfBirth = set("dateOfBirth", dateOfBirth);
         Bson valueUpdate_at = set("update_at", update_at);
         Bson valueUserUpdate = set("update_by", userUpdate);
-        Bson valueEmailUpdate = set("email", request.getEmail());
+        Bson valueEmailUpdate = set("email", request.getEmail().replaceAll(" ", ""));
 
         Bson value = Updates.combine(valueFullname, valueDateOfBirth, valueUpdate_at, valueUserUpdate, valueEmailUpdate, valueNameSearch);
 
         db.update(CollectionNameDefs.COLL_USER, cond, value);
+
+        Bson updateProfile = Updates.combine(
+                set(DbKeyConfig.FULL_NAME_CREATOR, request.getFullName())
+        );
+        db.update(CollectionNameDefs.COLL_PROFILE, Filters.eq(DbKeyConfig.CREATE_RECRUITMENT_BY, request.getUsername()), updateProfile);
+
+        Bson updateCalendar = Updates.combine(
+                set(DbKeyConfig.INTERVIEWERS_FULL_NAME, request.getFullName()),
+                set(DbKeyConfig.INTERVIEWERS_EMAIL, request.getEmail().replaceAll(" ", ""))
+        );
+        db.update(CollectionNameDefs.COLL_CALENDAR_PROFILE, Filters.eq(DbKeyConfig.JOIN_USERNAME, request.getUsername()), updateCalendar);
+
+        Bson updateRecruitment = Updates.combine(
+                set(DbKeyConfig.INTERVIEWERS_FULL_NAME, request.getFullName()),
+                set(DbKeyConfig.INTERVIEWERS_EMAIL, request.getEmail().replaceAll(" ", ""))
+        );
+        db.update(CollectionNameDefs.COLL_RECRUITMENT, Filters.eq(DbKeyConfig.JOIN_USERNAME, request.getUsername()), updateRecruitment);
+
+        Bson updateRecruitment2 = Updates.combine(
+                set(DbKeyConfig.FULL_NAME, request.getFullName())
+        );
+        db.update(CollectionNameDefs.COLL_RECRUITMENT, Filters.eq(DbKeyConfig.CREATE_BY, request.getUsername()), updateRecruitment2);
+
+        Bson updateComment = Updates.combine(
+                set(DbKeyConfig.FULL_NAME, request.getFullName())
+        );
+        db.update(CollectionNameDefs.COLL_COMMENT, Filters.eq(DbKeyConfig.CREATE_AT, request.getUsername()), updateComment);
+
+        Bson con = Filters.eq(DbKeyConfig.USERNAME, request.getUsername());
+        Bson updateHistory = Updates.combine(
+                set(DbKeyConfig.FULL_NAME, request.getFullName())
+        );
+        db.update(CollectionNameDefs.COLL_HISTORY_PROFILE, con, updateHistory);
+
+        Bson updateHistoryEmail = Updates.combine(
+                set(DbKeyConfig.FULL_NAME, request.getFullName())
+        );
+        db.update(CollectionNameDefs.COLL_HISTORY_EMAIL, con, updateHistoryEmail);
+
+        Bson updateNote = Updates.combine(
+                set(DbKeyConfig.FULL_NAME, request.getFullName())
+        );
+        db.update(CollectionNameDefs.COLL_NOTE_PROFILE, con, updateNote);
+
+        Bson updateProfile1 = Updates.combine(
+                set(DbKeyConfig.HR_REF, request.getFullName()),
+                set(DbKeyConfig.MAIL_REF, request.getEmail().replaceAll(" ", ""))
+        );
+        db.update(CollectionNameDefs.COLL_PROFILE, con, updateProfile1);
+
+        Bson updateProfile2 = Updates.combine(
+                set(DbKeyConfig.PIC_NAME, request.getFullName()),
+                set(DbKeyConfig.PIC_MAIL, request.getEmail().replaceAll(" ", ""))
+        );
+        db.update(CollectionNameDefs.COLL_PROFILE, Filters.eq(DbKeyConfig.PIC_ID, request.getUsername()), updateProfile2);
 
         response.setSuccess();
         return response;
@@ -179,7 +234,52 @@ public class AccountServiceImpl extends BaseService implements AccountService {
     @Override
     public BaseResponse deleteAccount(DeleteAccountRequest request) {
         BaseResponse response = new BaseResponse();
-
+        long count = db.countAll(CollectionNameDefs.COLL_PROFILE, Filters.eq(DbKeyConfig.CREATE_RECRUITMENT_BY, request.getUsername()));
+        if (count > 0) {
+            response.setFailed("Không thể xóa user này!");
+            return response;
+        }
+        long count1 = db.countAll(CollectionNameDefs.COLL_CALENDAR_PROFILE, Filters.eq(DbKeyConfig.JOIN_USERNAME, request.getUsername()));
+        if (count1 > 0) {
+            response.setFailed("Không thể xóa user này!");
+            return response;
+        }
+        long count2 = db.countAll(CollectionNameDefs.COLL_RECRUITMENT, Filters.eq(DbKeyConfig.JOIN_USERNAME, request.getUsername()));
+        if (count2 > 0) {
+            response.setFailed("Không thể xóa user này!");
+            return response;
+        }
+        long count3 = db.countAll(CollectionNameDefs.COLL_COMMENT, Filters.eq(DbKeyConfig.CREATE_AT, request.getUsername()));
+        if (count3 > 0) {
+            response.setFailed("Không thể xóa user này!");
+            return response;
+        }
+        Bson con = Filters.eq(DbKeyConfig.USERNAME, request.getUsername());
+        long count4 = db.countAll(CollectionNameDefs.COLL_HISTORY_EMAIL, con);
+        if (count4 > 0) {
+            response.setFailed("Không thể xóa user này!");
+            return response;
+        }
+        long count5 = db.countAll(CollectionNameDefs.COLL_HISTORY_PROFILE, con);
+        if (count5 > 0) {
+            response.setFailed("Không thể xóa user này!");
+            return response;
+        }
+        long count6 = db.countAll(CollectionNameDefs.COLL_NOTE_PROFILE, con);
+        if (count6 > 0) {
+            response.setFailed("Không thể xóa user này!");
+            return response;
+        }
+        long count7 = db.countAll(CollectionNameDefs.COLL_PROFILE, con);
+        if (count7 > 0) {
+            response.setFailed("Không thể xóa user này!");
+            return response;
+        }
+        long count8 = db.countAll(CollectionNameDefs.COLL_PROFILE, Filters.eq(DbKeyConfig.PIC_ID, request.getUsername()));
+        if (count8 > 0) {
+            response.setFailed("Không thể xóa user này!");
+            return response;
+        }
         String username = request.getUsername();
         Bson cond = Filters.eq("username", username);
         Document user = db.findOne(CollectionNameDefs.COLL_USER, cond);
@@ -187,6 +287,7 @@ public class AccountServiceImpl extends BaseService implements AccountService {
             response.setResult(-1, "Không tồn tại người dùng này");
             return response;
         }
+
         db.delete(CollectionNameDefs.COLL_USER, user);
         response.setSuccess();
         return response;

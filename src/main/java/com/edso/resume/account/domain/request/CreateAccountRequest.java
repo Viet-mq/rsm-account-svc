@@ -40,7 +40,7 @@ public class CreateAccountRequest extends BaseAuthRequest {
             response.setResult(-1, "Bạn chưa nhập email");
             return response;
         }
-        if (!AppUtils.validateEmail(email)) {
+        if (!AppUtils.validateEmail(email.replaceAll(" ", ""))) {
             response.setResult(-1, "Bạn nhập email chưa đúng định dạng");
             return response;
         }

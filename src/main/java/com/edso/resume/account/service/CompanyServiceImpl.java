@@ -187,6 +187,11 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
 //            logger.error("Exception: ", ex);
 //        }
 
+        Bson updateProfile = Updates.combine(
+                Updates.set(DbKeyConfig.COMPANY_NAME, AppUtils.mergeWhitespace(name))
+        );
+        db.update(CollectionNameDefs.COLL_PROFILE, Filters.eq(DbKeyConfig.COMPANY_ID, id), updateProfile);
+
         // update roles
         Bson updates = Updates.combine(
                 Updates.set(DbKeyConfig.COMPANY_NAME, AppUtils.mergeWhitespace(name)),
@@ -214,6 +219,12 @@ public class CompanyServiceImpl extends BaseService implements CompanyService {
     @Override
     public BaseResponse deleteCompany(DeleteCompanyRequest request) {
         BaseResponse response = new BaseResponse();
+        long count = db.countAll(CollectionNameDefs.COLL_PROFILE, Filters.eq(DbKeyConfig.COMPANY_ID, request.getId()));
+        if (count > 0) {
+            response.setFailed("Không thể xóa công ty này!");
+            return response;
+        }
+
         String id = request.getId();
         Bson cond = Filters.eq(DbKeyConfig.ID, id);
         Document idDocument = db.findOne(CollectionNameDefs.COLL_COMPANY, cond);
