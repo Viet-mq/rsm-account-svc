@@ -9,6 +9,7 @@ import org.springframework.data.redis.core.RedisHash;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @Builder
@@ -21,7 +22,8 @@ public class SessionEntity implements Serializable {
     private String username;
     private String fullName;
     private Integer role;
-    private List<String> permissions;
+    private List<String> organization;
+    private Set<String> apiPaths;
     private Long lastRequest;
     @Builder.Default
     private Boolean needToDie = false;

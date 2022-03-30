@@ -5,14 +5,15 @@ import com.edso.resume.account.domain.db.MongoDbOnlineSyncActions;
 import com.edso.resume.account.domain.request.LoginRequest;
 import com.edso.resume.account.domain.request.LogoutRequest;
 import com.edso.resume.account.domain.response.LoginResponse;
+import com.edso.resume.account.entities.Permission;
 import com.edso.resume.account.entities.SessionEntity;
 import com.edso.resume.account.entities.TalentPool;
 import com.edso.resume.account.repo.SessionRepository;
 import com.edso.resume.lib.common.AppUtils;
 import com.edso.resume.lib.common.CollectionNameDefs;
+import com.edso.resume.lib.common.DbKeyConfig;
 import com.edso.resume.lib.response.BaseResponse;
-import com.edso.resume.lib.response.GetArrayResponse;
-import com.edso.resume.lib.response.GetSingleItemResponse;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.model.Filters;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -22,10 +23,7 @@ import org.bson.conversions.Bson;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 @Service
 public class AuthenticationServiceImpl extends BaseService implements AuthenticationService {
@@ -75,34 +73,53 @@ public class AuthenticationServiceImpl extends BaseService implements Authentica
             // delete all session before
             sessionRepository.deleteByUserId(username);
 
-            // get api access permission
-            GetArrayResponse<String> r1 = apiRoleGroupService.getApiRoleOfUser(username);
-            List<String> ps = new ArrayList<>();
-            if (r1 != null && r1.getRows() != null) {
-                ps = r1.getRows();
+            Set<String> paths = new HashSet<>();
+            Set<String> viewRoleIds = new HashSet<>();
+            List<Document> listRole = (List<Document>) user.get(DbKeyConfig.ROLES);
+            List<String> roleIds = new ArrayList<>();
+            for (Document document : listRole) {
+                roleIds.add(AppUtils.parseString(document.get(DbKeyConfig.ID)));
             }
+            FindIterable<Document> roles = db.findAll2(CollectionNameDefs.COLL_ROLE, Filters.in(DbKeyConfig.ID, roleIds), null, 0, 0);
+            if (roles != null) {
+                Set<String> apiRoleIds = new HashSet<>();
+                for (Document document : roles) {
+                    for (Document document1 : (List<Document>) document.get(DbKeyConfig.API_ROLES)) {
+                        apiRoleIds.add(AppUtils.parseString(document1.get(DbKeyConfig.ID)));
+                    }
+                    for (Document document1 : (List<Document>) document.get(DbKeyConfig.VIEW_ROLES)) {
+                        viewRoleIds.add(AppUtils.parseString(document1.get(DbKeyConfig.ID)));
+                    }
+                }
+                FindIterable<Document> apiRole = db.findAll2(CollectionNameDefs.COLL_API_ROLE, Filters.in(DbKeyConfig.ID, apiRoleIds), null, 0, 0);
+                if (apiRole != null) {
+                    Set<String> apiIds = new HashSet<>();
+                    for (Document document : apiRole) {
+                        apiIds.addAll((List<String>) document.get(DbKeyConfig.APIS));
+                    }
+                    FindIterable<Document> api = db.findAll2(CollectionNameDefs.COLL_API, Filters.in(DbKeyConfig.ID, apiIds), null, 0, 0);
+                    if (api != null) {
+                        for (Document document : api) {
+                            paths.add(AppUtils.parseString(document.get(DbKeyConfig.PATH)));
+                        }
+                    }
+                }
+            }
+
+            Document org = db.findOne(CollectionNameDefs.COLL_ORGANIZATION, Filters.eq(DbKeyConfig.ID, AppUtils.parseString(user.get(DbKeyConfig.ORGANIZATION_ID))));
 
             String fullName = AppUtils.parseString(user.get("full_name"));
             SessionEntity sessionEntity = SessionEntity.builder()
                     .token(token)
                     .username(username)
                     .fullName(fullName)
+                    .organization((List<String>) org.get(DbKeyConfig.ORGANIZATIONS))
                     .role(1)
-                    .permissions(ps)
+                    .apiPaths(paths)
                     .lastRequest(System.currentTimeMillis())
                     .build();
             sessionRepository.addSession(sessionEntity);
 
-            // get menu tree for client
-            GetSingleItemResponse<Document> r2 = menuFrontEndService.getMenuOfUser(username);
-            List<Document> tree = new ArrayList<>();
-            if (r2 != null && r2.getItem() != null) {
-                tree = (List<Document>) r2.getItem().get("children");
-            }
-
-            if (tree == null) {
-                tree = new ArrayList<>();
-            }
 
             // [dautv] : tạm fix để test, sau này sẽ phân quyền lại cho đúng
             List<Document> talentPools = db.findAll("coll_talent_pool", new Document(), null, 0, 100);
@@ -119,8 +136,40 @@ public class AuthenticationServiceImpl extends BaseService implements Authentica
                 }
             }
 
+            Set<Permission> permissions = new HashSet<>();
+            FindIterable<Document> viewRoles = db.findAll2(CollectionNameDefs.COLL_VIEW_ROLE, Filters.in(DbKeyConfig.ID, viewRoleIds), null, 0, 0);
+            if (viewRoles != null) {
+                List<Document> list = new ArrayList<>();
+                for (Document document : viewRoles) {
+                    List<Document> permissionList = (List<Document>) document.get(DbKeyConfig.PERMISSIONS);
+                    list.addAll(permissionList);
+                    for (Document document1 : permissionList) {
+                        Permission permission = Permission.builder()
+                                .id(AppUtils.parseString(document1.get(DbKeyConfig.ID)))
+                                .title(AppUtils.parseString(document1.get(DbKeyConfig.TITLE)))
+                                .icon(AppUtils.parseString(document1.get(DbKeyConfig.ICON)))
+                                .path(AppUtils.parseString(document1.get(DbKeyConfig.PATH)))
+                                .index(AppUtils.parseLong(document1.get(DbKeyConfig.INDEX)))
+                                .actions(new HashSet<>())
+                                .build();
+                        permissions.add(permission);
+                    }
+                }
+                for (Document document : list) {
+                    for (Permission p : permissions) {
+                        if (p.getId().equals(AppUtils.parseString(document.get(DbKeyConfig.ID)))) {
+                            Set<Document> actions = p.getActions();
+                            actions.addAll((List<Document>) document.get(DbKeyConfig.ACTIONS));
+                            p.setActions(actions);
+                        }
+                    }
+                }
+            }
+            List<Permission> permissionList = new LinkedList<>(permissions);
+            Collections.sort(permissionList);
+
             // setup response
-            response.setPermission(tree);
+            response.setPermissions(permissionList);
             response.setUsername(username);
             response.setFullName(fullName);
             response.setAccessToken(sessionEntity.getToken());

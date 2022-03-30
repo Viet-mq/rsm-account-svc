@@ -53,6 +53,7 @@ public class AccountServiceImpl extends BaseService implements AccountService {
         if (dateOfBirth != null) {
             c.add(Filters.eq("dateOfBirth", dateOfBirth));
         }
+        c.add(Filters.in(DbKeyConfig.ORGANIZATION_ID, headerInfo.getOrganizations()));
         Bson cond = buildCondition(c);
         long total = db.countAll(CollectionNameDefs.COLL_USER, cond);
         PagingInfo pagingInfo = PagingInfo.parse(page, size);
@@ -93,9 +94,37 @@ public class AccountServiceImpl extends BaseService implements AccountService {
         }
 
         Document email = db.findOne(CollectionNameDefs.COLL_USER, Filters.eq("email", request.getEmail().replaceAll(" ", "")));
-
         if (email != null) {
             response.setResult(-1, "Email này đã tồn tại");
+            return response;
+        }
+
+        Document org = db.findOne(CollectionNameDefs.COLL_ORGANIZATION, Filters.eq("id", request.getOrganization()));
+        if (org == null) {
+            response.setResult(-1, "Không tồn tại tổ chức này");
+            return response;
+        }
+
+        FindIterable<Document> roles = db.findAll2(CollectionNameDefs.COLL_ROLE, Filters.in(DbKeyConfig.ID, request.getRoles()), null, 0, 0);
+        List<Document> roleResult = new ArrayList<>();
+        if (roles == null) {
+            response.setFailed("Không tồn tại role này");
+            return response;
+        }
+        for (Document document : roles) {
+            document.remove("_id");
+            document.remove(DbKeyConfig.NAME_SEARCH);
+            document.remove(DbKeyConfig.NAME_EQUAL);
+            document.remove(DbKeyConfig.CREATE_AT);
+            document.remove(DbKeyConfig.CREATE_BY);
+            document.remove(DbKeyConfig.UPDATE_AT);
+            document.remove(DbKeyConfig.UPDATE_BY);
+            document.remove(DbKeyConfig.API_ROLES);
+            document.remove(DbKeyConfig.VIEW_ROLES);
+            roleResult.add(document);
+        }
+        if (roleResult.size() != request.getRoles().size()) {
+            response.setFailed("Không tồn tại role này");
             return response;
         }
 
@@ -114,10 +143,10 @@ public class AccountServiceImpl extends BaseService implements AccountService {
         user.append("status", Common.ACC_STATUS_ACTIVE);
         user.append("dateOfBirth", dateofBirth);
 
-        // check role
-        Integer role = request.getRole();
+        user.append("role", roleResult);
+        user.append(DbKeyConfig.ORGANIZATION_ID, request.getOrganization());
+        user.append(DbKeyConfig.ORGANIZATION_NAME, AppUtils.parseString(org.get(DbKeyConfig.NAME)));
 
-        user.append("role", role);
         user.append("create_at", System.currentTimeMillis());
         user.append("update_at", System.currentTimeMillis());
 //        user.append("count_login", 0);
@@ -156,11 +185,43 @@ public class AccountServiceImpl extends BaseService implements AccountService {
             }
         }
 
+        Document org = db.findOne(CollectionNameDefs.COLL_ORGANIZATION, Filters.eq("id", request.getOrganization()));
+        if (org == null) {
+            response.setResult(-1, "Không tồn tại tổ chức này");
+            return response;
+        }
+
+        FindIterable<Document> roles = db.findAll2(CollectionNameDefs.COLL_ROLE, Filters.in(DbKeyConfig.ID, request.getRoles()), null, 0, 0);
+        List<Document> roleResult = new ArrayList<>();
+        if (roles == null) {
+            response.setFailed("Không tồn tại role này");
+            return response;
+        }
+        for (Document document : roles) {
+            document.remove("_id");
+            document.remove(DbKeyConfig.NAME_SEARCH);
+            document.remove(DbKeyConfig.NAME_EQUAL);
+            document.remove(DbKeyConfig.CREATE_AT);
+            document.remove(DbKeyConfig.CREATE_BY);
+            document.remove(DbKeyConfig.UPDATE_AT);
+            document.remove(DbKeyConfig.UPDATE_BY);
+            document.remove(DbKeyConfig.API_ROLES);
+            document.remove(DbKeyConfig.VIEW_ROLES);
+            roleResult.add(document);
+        }
+        if (roleResult.size() != request.getRoles().size()) {
+            response.setFailed("Không tồn tại role này");
+            return response;
+        }
+
         String fullName = request.getFullName();
         String dateOfBirth = request.getDateOfBirth();
         Long update_at = System.currentTimeMillis();
 
 
+        Bson valueRole = set("role", roleResult);
+        Bson valueOrgId = set(DbKeyConfig.ORGANIZATION_ID, request.getOrganization());
+        Bson valueOrgName = set(DbKeyConfig.ORGANIZATION_NAME, AppUtils.parseString(org.get(DbKeyConfig.NAME)));
         Bson valueFullname = set("full_name", fullName);
         Bson valueNameSearch = set("name_search", parseVietnameseToEnglish(fullName));
         Bson valueDateOfBirth = set("dateOfBirth", dateOfBirth);
@@ -168,7 +229,7 @@ public class AccountServiceImpl extends BaseService implements AccountService {
         Bson valueUserUpdate = set("update_by", userUpdate);
         Bson valueEmailUpdate = set("email", request.getEmail().replaceAll(" ", ""));
 
-        Bson value = Updates.combine(valueFullname, valueDateOfBirth, valueUpdate_at, valueUserUpdate, valueEmailUpdate, valueNameSearch);
+        Bson value = Updates.combine(valueFullname, valueDateOfBirth, valueUpdate_at, valueUserUpdate, valueEmailUpdate, valueNameSearch, valueRole, valueOrgId, valueOrgName);
 
         db.update(CollectionNameDefs.COLL_USER, cond, value);
 

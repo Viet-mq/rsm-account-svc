@@ -1,12 +1,12 @@
 package com.edso.resume.account.domain.response;
 
+import com.edso.resume.account.entities.Permission;
 import com.edso.resume.account.entities.TalentPool;
 import com.edso.resume.lib.response.BaseResponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
-import org.bson.Document;
 
 import java.util.List;
 
@@ -19,7 +19,7 @@ public class LoginResponse extends BaseResponse {
     private String accessToken;
     private String username;
     private String fullName;
-    private List<Document> permission;
+    private List<Permission> permissions;
     private List<TalentPool> pools;
 
     public LoginResponse() {

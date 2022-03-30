@@ -1,11 +1,14 @@
 package com.edso.resume.account.domain.request;
 
 import com.edso.resume.lib.common.AppUtils;
+import com.edso.resume.lib.common.ErrorCodeDefs;
 import com.edso.resume.lib.response.BaseResponse;
 import com.google.common.base.Strings;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
+
+import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
@@ -14,6 +17,8 @@ public class UpdateAccountRequest extends BaseAuthRequest {
     private String username;
     private String fullName;
     private String dateOfBirth;
+    private List<String> roles;
+    private String organization;
     private String email;
 
     public BaseResponse validate() {
@@ -36,6 +41,14 @@ public class UpdateAccountRequest extends BaseAuthRequest {
         }
         if (!AppUtils.validateEmail(email.replaceAll(" ", ""))) {
             response.setResult(-1, "Bạn nhập email chưa đúng định dạng");
+            return response;
+        }
+        if (roles == null || roles.isEmpty()) {
+            response.setResult(ErrorCodeDefs.ROLES, "Bạn chưa chọn role nào");
+            return response;
+        }
+        if (Strings.isNullOrEmpty(organization)) {
+            response.setResult(-1, "Bạn chưa chọn tổ chức");
             return response;
         }
         if (Strings.isNullOrEmpty(dateOfBirth)) {
