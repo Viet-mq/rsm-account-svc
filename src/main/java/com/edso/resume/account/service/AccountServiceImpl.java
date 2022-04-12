@@ -53,7 +53,9 @@ public class AccountServiceImpl extends BaseService implements AccountService {
         if (dateOfBirth != null) {
             c.add(Filters.eq("dateOfBirth", dateOfBirth));
         }
-        c.add(Filters.in(DbKeyConfig.ORGANIZATION_ID, headerInfo.getOrganizations()));
+        if (headerInfo.getRole() != 1) {
+            c.add(Filters.in(DbKeyConfig.ORGANIZATIONS, headerInfo.getOrganizations()));
+        }
         Bson cond = buildCondition(c);
         long total = db.countAll(CollectionNameDefs.COLL_USER, cond);
         PagingInfo pagingInfo = PagingInfo.parse(page, size);
@@ -64,7 +66,8 @@ public class AccountServiceImpl extends BaseService implements AccountService {
             entity.setFullName(AppUtils.parseString(doc.get("full_name")));
             entity.setEmail(AppUtils.parseString(doc.get("email")));
             entity.setDateOfBirth(AppUtils.parseString(doc.get("dateOfBirth")));
-            entity.setRole(AppUtils.parseInt(doc.get("role")));
+            entity.setRoles((List<Document>) doc.get("roles"));
+            entity.setOrganizations((List<String>) doc.get("organizations"));
             entity.setStatus(AppUtils.parseInt(doc.get("status")));
             entity.setCreateAt(AppUtils.parseLong(doc.get("create_at")));
             entity.setUpdateAt(AppUtils.parseLong(doc.get("update_at")));
@@ -99,8 +102,8 @@ public class AccountServiceImpl extends BaseService implements AccountService {
             return response;
         }
 
-        Document org = db.findOne(CollectionNameDefs.COLL_ORGANIZATION, Filters.eq("id", request.getOrganization()));
-        if (org == null) {
+        List<Document> orgs = db.findAll(CollectionNameDefs.COLL_ORGANIZATION, Filters.in("id", request.getOrganizations()), null, 0, 0);
+        if (orgs.size() != request.getOrganizations().size()) {
             response.setResult(-1, "Không tồn tại tổ chức này");
             return response;
         }
@@ -143,9 +146,8 @@ public class AccountServiceImpl extends BaseService implements AccountService {
         user.append("status", Common.ACC_STATUS_ACTIVE);
         user.append("dateOfBirth", dateofBirth);
 
-        user.append("role", roleResult);
-        user.append(DbKeyConfig.ORGANIZATION_ID, request.getOrganization());
-        user.append(DbKeyConfig.ORGANIZATION_NAME, AppUtils.parseString(org.get(DbKeyConfig.NAME)));
+        user.append("roles", roleResult);
+        user.append(DbKeyConfig.ORGANIZATIONS, request.getOrganizations());
 
         user.append("create_at", System.currentTimeMillis());
         user.append("update_at", System.currentTimeMillis());
@@ -168,8 +170,12 @@ public class AccountServiceImpl extends BaseService implements AccountService {
 
         String username = request.getUsername();
         String userUpdate = request.getInfo().getUsername();
-
-        Bson cond = Filters.eq("username", username);
+        List<Bson> c = new ArrayList<>();
+        c.add(Filters.eq("username", username));
+        if (request.getInfo().getRole() != 1) {
+            c.add(Filters.in(DbKeyConfig.ORGANIZATIONS, request.getInfo().getOrganizations()));
+        }
+        Bson cond = buildCondition(c);
         Document user = db.findOne(CollectionNameDefs.COLL_USER, cond);
         if (user == null) {
             response.setResult(-1, "Không tồn tại người dùng này");
@@ -185,8 +191,8 @@ public class AccountServiceImpl extends BaseService implements AccountService {
             }
         }
 
-        Document org = db.findOne(CollectionNameDefs.COLL_ORGANIZATION, Filters.eq("id", request.getOrganization()));
-        if (org == null) {
+        List<Document> orgs = db.findAll(CollectionNameDefs.COLL_ORGANIZATION, Filters.in("id", request.getOrganizations()), null, 0, 0);
+        if (orgs.size() != request.getOrganizations().size()) {
             response.setResult(-1, "Không tồn tại tổ chức này");
             return response;
         }
@@ -219,9 +225,8 @@ public class AccountServiceImpl extends BaseService implements AccountService {
         Long update_at = System.currentTimeMillis();
 
 
-        Bson valueRole = set("role", roleResult);
-        Bson valueOrgId = set(DbKeyConfig.ORGANIZATION_ID, request.getOrganization());
-        Bson valueOrgName = set(DbKeyConfig.ORGANIZATION_NAME, AppUtils.parseString(org.get(DbKeyConfig.NAME)));
+        Bson valueRole = set("roles", roleResult);
+        Bson valueOrg = set(DbKeyConfig.ORGANIZATIONS, request.getOrganizations());
         Bson valueFullname = set("full_name", fullName);
         Bson valueNameSearch = set("name_search", parseVietnameseToEnglish(fullName));
         Bson valueDateOfBirth = set("dateOfBirth", dateOfBirth);
@@ -229,7 +234,7 @@ public class AccountServiceImpl extends BaseService implements AccountService {
         Bson valueUserUpdate = set("update_by", userUpdate);
         Bson valueEmailUpdate = set("email", request.getEmail().replaceAll(" ", ""));
 
-        Bson value = Updates.combine(valueFullname, valueDateOfBirth, valueUpdate_at, valueUserUpdate, valueEmailUpdate, valueNameSearch, valueRole, valueOrgId, valueOrgName);
+        Bson value = Updates.combine(valueFullname, valueDateOfBirth, valueUpdate_at, valueUserUpdate, valueEmailUpdate, valueNameSearch, valueRole, valueOrg);
 
         db.update(CollectionNameDefs.COLL_USER, cond, value);
 
@@ -342,7 +347,12 @@ public class AccountServiceImpl extends BaseService implements AccountService {
             return response;
         }
         String username = request.getUsername();
-        Bson cond = Filters.eq("username", username);
+        List<Bson> c = new ArrayList<>();
+        c.add(Filters.eq("username", username));
+        if (request.getInfo().getRole() != 1) {
+            c.add(Filters.in(DbKeyConfig.ORGANIZATIONS, request.getInfo().getOrganizations()));
+        }
+        Bson cond = buildCondition(c);
         Document user = db.findOne(CollectionNameDefs.COLL_USER, cond);
         if (user == null) {
             response.setResult(-1, "Không tồn tại người dùng này");
@@ -361,13 +371,26 @@ public class AccountServiceImpl extends BaseService implements AccountService {
 
         String username = request.getUsername();
 
-
-        Bson cond = Filters.eq("username", username);
+        List<Bson> c = new ArrayList<>();
+        c.add(Filters.eq("username", username));
+        if (request.getInfo().getRole() != 1) {
+            c.add(Filters.in(DbKeyConfig.ORGANIZATIONS, request.getInfo().getOrganizations()));
+        }
+        Bson cond = buildCondition(c);
         Document user = db.findOne(CollectionNameDefs.COLL_USER, cond);
-
         if (user == null) {
-            response.setResult(-1, "Không tồn tại tài khoản này");
+            response.setResult(-1, "Không tồn tại người dùng này");
             return response;
+        }
+
+        if (request.getInfo().getRole() != 1) {
+            String oldPassWord = AppUtils.MD5(request.getOldPassword());
+            oldPassWord = AppUtils.MD5(oldPassWord);
+
+            if (!oldPassWord.equals(AppUtils.parseString(user.get(DbKeyConfig.PASSWORD)))) {
+                response.setFailed("Mật khẩu cũ không đúng");
+                return response;
+            }
         }
 
         String newPassword = AppUtils.MD5(request.getNewPassword());
@@ -408,6 +431,7 @@ public class AccountServiceImpl extends BaseService implements AccountService {
         }
 
         String newPassword = AppUtils.MD5(request.getNewPassword());
+        newPassword = AppUtils.MD5(newPassword);
 
         Long last_change_password_at = System.currentTimeMillis();
 

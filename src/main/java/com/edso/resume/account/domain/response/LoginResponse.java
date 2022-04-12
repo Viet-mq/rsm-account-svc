@@ -24,7 +24,6 @@ public class LoginResponse extends BaseResponse {
 
     public LoginResponse() {
         super();
-        this.fullName = "";
         this.accessToken = "";
     }
 

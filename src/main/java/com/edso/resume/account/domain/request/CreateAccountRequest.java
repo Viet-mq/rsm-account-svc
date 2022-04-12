@@ -19,7 +19,7 @@ public class CreateAccountRequest extends BaseAuthRequest {
     private String fullName;
     private String email;
     private List<String> roles;
-    private String organization;
+    private List<String> organizations;
     private String dateOfBirth;
 
     public BaseResponse validate() {
@@ -56,7 +56,7 @@ public class CreateAccountRequest extends BaseAuthRequest {
             response.setResult(ErrorCodeDefs.ROLES, "Bạn chưa chọn role nào");
             return response;
         }
-        if (Strings.isNullOrEmpty(organization)) {
+        if (organizations == null || organizations.isEmpty()) {
             response.setResult(-1, "Bạn chưa chọn tổ chức");
             return response;
         }

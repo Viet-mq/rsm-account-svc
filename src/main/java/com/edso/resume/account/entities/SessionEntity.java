@@ -20,9 +20,8 @@ public class SessionEntity implements Serializable {
     @Id
     private String token;
     private String username;
-    private String fullName;
     private Integer role;
-    private List<String> organization;
+    private List<String> organizations;
     private Set<String> apiPaths;
     private Long lastRequest;
     @Builder.Default
