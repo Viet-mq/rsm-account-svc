@@ -75,8 +75,9 @@ public class AuthenticationServiceImpl extends BaseService implements Authentica
 
             int role = AppUtils.parseInt(user.get("role"));
             List<String> orgs = new ArrayList<>();
+            List<String> myOrgs = new ArrayList<>();
             Set<String> paths = new HashSet<>();
-            List<Permission> permissionList = new ArrayList<>();
+            List<Permission> permissionList;
             if (role != 1) {
                 Set<String> viewRoleIds = new HashSet<>();
                 List<Document> listRole = (List<Document>) user.get(DbKeyConfig.ROLES);
@@ -142,13 +143,13 @@ public class AuthenticationServiceImpl extends BaseService implements Authentica
                 permissionList = new LinkedList<>(permissions);
                 Collections.sort(permissionList);
 
-                orgs = (List<String>) user.get(DbKeyConfig.ORGANIZATIONS);
+                myOrgs = (List<String>) user.get(DbKeyConfig.ORGANIZATIONS);
+                getRecursiveFunction(myOrgs, orgs);
             } else {
                 FindIterable<Document> list2 = db.findAll2(CollectionNameDefs.COLL_PERMISSION, null, null, 0, 0);
                 Set<Permission> permissions = new HashSet<>();
                 if (list2 != null) {
                     for (Document document : list2) {
-
                         Set<Document> actions = new HashSet<>();
                         List<Document> list1 = (List<Document>) document.get(DbKeyConfig.ACTIONS);
                         for (Document document1 : list1) {
@@ -168,11 +169,17 @@ public class AuthenticationServiceImpl extends BaseService implements Authentica
                 }
                 permissionList = new LinkedList<>(permissions);
                 Collections.sort(permissionList);
+                FindIterable<Document> listOrg = db.findAll2(CollectionNameDefs.COLL_ORGANIZATION, null, null, 0, 0);
+                for (Document document : listOrg) {
+                    myOrgs.add(AppUtils.parseString(document.get(DbKeyConfig.ID)));
+                    orgs.add(AppUtils.parseString(document.get(DbKeyConfig.ID)));
+                }
             }
 
             SessionEntity sessionEntity = SessionEntity.builder()
                     .token(token)
                     .username(username)
+                    .myOrganizations(myOrgs)
                     .organizations(orgs)
                     .role(role)
                     .apiPaths(paths)
@@ -198,6 +205,7 @@ public class AuthenticationServiceImpl extends BaseService implements Authentica
             // setup response
             response.setPermissions(permissionList);
             response.setUsername(username);
+            response.setFullName(AppUtils.parseString(user.get(DbKeyConfig.FULL_NAME)));
             response.setAccessToken(sessionEntity.getToken());
             response.setPools(pools);
             response.setSuccess();
@@ -219,6 +227,19 @@ public class AuthenticationServiceImpl extends BaseService implements Authentica
                 .signWith(SignatureAlgorithm.HS256, Common.SECRET.getBytes(StandardCharsets.UTF_8))
                 .setIssuedAt(date)
                 .compact();
+    }
+
+    private void getRecursiveFunction(List<String> parentIds, List<String> orgs) {
+        orgs.addAll(parentIds);
+        List<Document> parents = db.findAll(CollectionNameDefs.COLL_ORGANIZATION, Filters.in(DbKeyConfig.PARENT_ID, parentIds), null, 0, 0);
+        if (!parents.isEmpty()) {
+            List<String> ids = new ArrayList<>();
+            for (Document document : parents) {
+                ids.add(AppUtils.parseString(document.get(DbKeyConfig.ID)));
+            }
+            getRecursiveFunction(ids, orgs);
+        }
+
     }
 
     @Override

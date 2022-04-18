@@ -21,6 +21,7 @@ public class SessionEntity implements Serializable {
     private String token;
     private String username;
     private Integer role;
+    private List<String> myOrganizations;
     private List<String> organizations;
     private Set<String> apiPaths;
     private Long lastRequest;

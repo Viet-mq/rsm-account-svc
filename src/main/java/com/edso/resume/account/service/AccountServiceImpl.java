@@ -53,9 +53,7 @@ public class AccountServiceImpl extends BaseService implements AccountService {
         if (dateOfBirth != null) {
             c.add(Filters.eq("dateOfBirth", dateOfBirth));
         }
-        if (headerInfo.getRole() != 1) {
-            c.add(Filters.in(DbKeyConfig.ORGANIZATIONS, headerInfo.getOrganizations()));
-        }
+        c.add(Filters.in(DbKeyConfig.ORGANIZATIONS, headerInfo.getOrganizations()));
         Bson cond = buildCondition(c);
         long total = db.countAll(CollectionNameDefs.COLL_USER, cond);
         PagingInfo pagingInfo = PagingInfo.parse(page, size);
@@ -383,16 +381,6 @@ public class AccountServiceImpl extends BaseService implements AccountService {
             return response;
         }
 
-        if (request.getInfo().getRole() != 1) {
-            String oldPassWord = AppUtils.MD5(request.getOldPassword());
-            oldPassWord = AppUtils.MD5(oldPassWord);
-
-            if (!oldPassWord.equals(AppUtils.parseString(user.get(DbKeyConfig.PASSWORD)))) {
-                response.setFailed("Mật khẩu cũ không đúng");
-                return response;
-            }
-        }
-
         String newPassword = AppUtils.MD5(request.getNewPassword());
         newPassword = AppUtils.MD5(newPassword);
 
@@ -429,6 +417,7 @@ public class AccountServiceImpl extends BaseService implements AccountService {
             response.setResult(-1, "Mật khẩu cũ không chính xác");
             return response;
         }
+
 
         String newPassword = AppUtils.MD5(request.getNewPassword());
         newPassword = AppUtils.MD5(newPassword);

@@ -13,7 +13,6 @@ import lombok.ToString;
 public class ChangePasswordAccRequest extends BaseAuthRequest {
     private String username;
     private String newPassword;
-    private String oldPassword;
 
     public BaseResponse validate() {
         BaseResponse response = new BaseResponse();
@@ -27,10 +26,6 @@ public class ChangePasswordAccRequest extends BaseAuthRequest {
         }
         if (Strings.isNullOrEmpty(newPassword)) {
             response.setResult(-1, "Vui lòng nhập mật khẩu mới");
-            return response;
-        }
-        if (Strings.isNullOrEmpty(oldPassword)) {
-            response.setResult(-1, "Vui lòng nhập mật khẩu cũ");
             return response;
         }
         return null;
