@@ -10,7 +10,9 @@ import com.edso.resume.lib.response.GetArrayResponse;
 public interface AccountService {
 
     GetArrayResponse<UserEntity> getAccounts(
-            HeaderInfo headerInfo, String name,
+            HeaderInfo headerInfo,
+            String username,
+            String name,
             Integer role,
             Integer status,
             String dateOfBirth,

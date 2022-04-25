@@ -25,13 +25,14 @@ public class AccountController extends BaseController {
     public GetArrayResponse<UserEntity> getAccounts(
             @RequestHeader Map<String, String> headers,
             @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "username", required = false) String username,
             @RequestParam(value = "role", required = false) Integer role,
             @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "dateOfBirth", required = false) String dateOfBirth,
             @RequestParam(value = "page", required = false) Integer page,
             @RequestParam(value = "size", required = false) Integer size) {
         HeaderInfo headerInfo = ParseHeaderUtil.build(headers);
-        return accountService.getAccounts(headerInfo, name, role, status, dateOfBirth, page, size);
+        return accountService.getAccounts(headerInfo, username, name, role, status, dateOfBirth, page, size);
     }
 
     @PostMapping("/create-account")

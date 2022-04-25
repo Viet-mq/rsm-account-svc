@@ -35,7 +35,7 @@ public class AccountServiceImpl extends BaseService implements AccountService {
     }
 
     @Override
-    public GetArrayResponse<UserEntity> getAccounts(HeaderInfo headerInfo, String name, Integer role, Integer status, String dateOfBirth, Integer page, Integer size) {
+    public GetArrayResponse<UserEntity> getAccounts(HeaderInfo headerInfo, String username, String name, Integer role, Integer status, String dateOfBirth, Integer page, Integer size) {
         GetArrayResponse<UserEntity> response = new GetArrayResponse<>();
         List<UserEntity> rows = new ArrayList<>();
         List<Bson> c = new ArrayList<>();
@@ -46,6 +46,9 @@ public class AccountServiceImpl extends BaseService implements AccountService {
         }
         if (role != null) {
             c.add(Filters.eq("role", role));
+        }
+        if (Strings.isNullOrEmpty(username)) {
+            c.add(Filters.eq("username", username));
         }
         if (status != null) {
             c.add(Filters.eq("status", status));
